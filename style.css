@@ -1,0 +1,517 @@
+/* ═══════════════════════════════════════════
+   EVERGREEN ESTATE — STYLE SHEET
+   Color palette:
+     Dark bg    : #1A0D07
+     Gold       : #C8A96E
+     Gold light : #E5C88A
+     Text light : #F0E6D3
+═══════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --gold:       #C8A96E;
+  --gold-light: #E5C88A;
+  --gold-dim:   #9A7A48;
+  --dark:       #1A0D07;
+  --dark-2:     #140A05;
+  --dark-3:     #0E0703;
+  --text-light: #F0E6D3;
+  --text-muted: rgba(240, 230, 211, 0.45);
+}
+
+html {
+  scroll-behavior: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: auto;
+}
+
+body {
+  background: var(--dark);
+  color: var(--text-light);
+  font-family: 'Cormorant Garamond', serif;
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: auto;
+  cursor: default;
+}
+
+/* Sticky Chapters Layout */
+.chapter-section {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--dark);
+}
+
+/* ─── CUSTOM SCROLLBAR ─── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--dark-3); }
+::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
+
+/* ════════════════════════════════
+   NAVBAR
+════════════════════════════════ */
+.navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 40px;
+  background: linear-gradient(180deg, rgba(26,13,7,0.95) 0%, rgba(26,13,7,0) 100%);
+  transition: background 0.4s ease;
+}
+
+.navbar.scrolled {
+  background: rgba(20, 10, 5, 0.96);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(200, 169, 110, 0.15);
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.3s;
+}
+.nav-left:hover { opacity: 1; }
+.nav-dot {
+  color: var(--gold);
+  font-size: 18px;
+  line-height: 1;
+}
+.nav-menu-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 3px;
+  color: var(--text-light);
+}
+
+.nav-center { display: flex; align-items: center; justify-content: center; }
+.nav-logo { display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }
+.logo-icon { width: 32px; height: 38px; }
+.logo-text { display: flex; flex-direction: column; align-items: center; line-height: 1; }
+.logo-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+.logo-sub {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 7px;
+  letter-spacing: 4px;
+  color: var(--gold-dim);
+  margin-top: 1px;
+}
+
+.nav-right { display: flex; align-items: center; }
+.btn-contact {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 2.5px;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  background: transparent;
+  padding: 8px 20px;
+  border-radius: 40px;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s, box-shadow 0.3s;
+}
+.btn-contact:hover {
+  background: var(--gold);
+  color: var(--dark);
+  box-shadow: 0 0 20px rgba(200, 169, 110, 0.4);
+}
+
+/* ════════════════════════════════
+   SECTION 1: HERO
+════════════════════════════════ */
+.hero-section {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 100vh;
+  background: var(--dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* ── Particles canvas ── */
+.particles-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* ── Deco horizontal lines ── */
+.deco-line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(200,169,110,0.35) 20%, rgba(200,169,110,0.35) 80%, transparent 100%);
+}
+.deco-line-top    { top: 42%; }
+.deco-line-bottom { top: 58%; }
+
+/* ── Chapter arrow left ── */
+.chapter-arrow-left {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  display: flex;
+  align-items: center;
+}
+.arrow-line {
+  width: 12px;
+  height: 1px;
+  background: var(--gold);
+  opacity: 0.6;
+}
+
+/* ── Progress bar ── */
+.progress-bar-wrap {
+  position: fixed;
+  top: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  z-index: 101;
+  pointer-events: none;
+}
+.progress-bar-track {
+  position: relative;
+  width: 100%;
+  height: 1px;
+  background: rgba(200, 169, 110, 0.25);
+  border-radius: 2px;
+}
+.progress-bar-fill {
+  position: absolute;
+  left: 0; top: 0;
+  height: 1px;
+  background: var(--gold);
+  border-radius: 2px;
+  width: 0%; /* Driven dynamically by ScrollTrigger */
+}
+.progress-bar-dot {
+  position: absolute;
+  top: 50%;
+  left: 0%; /* Driven dynamically */
+  transform: translate(-50%, -50%);
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 10px rgba(200,169,110,0.8);
+}
+
+/* ── Hero center (octagon + text) ── */
+.hero-center {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.octagon-container {
+  position: relative;
+  width: min(700px, 90vw);
+  aspect-ratio: 3 / 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.octagon-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.slide-counter {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 2px;
+  color: var(--gold);
+}
+.slide-current { font-weight: 500; }
+.slide-divider { opacity: 0.5; }
+.slide-total   { opacity: 0.5; }
+
+.hero-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1.25;
+}
+.hero-line {
+  display: block;
+  font-size: clamp(28px, 4.5vw, 56px);
+  background: linear-gradient(135deg, #C8A96E 0%, #E8C882 40%, #C8A96E 70%, #A07840 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  will-change: transform, opacity;
+}
+
+/* ════════════════════════════════
+   SECTION 2: REVEAL
+════════════════════════════════ */
+.reveal-section {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 100vh;
+  background: var(--dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.reveal-clip-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.reveal-image-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.reveal-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: blur(0px);
+  transform: scale(1.05);
+  will-change: filter, transform;
+}
+
+.reveal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 10, 5, 0.6);
+  transition: opacity 0.3s;
+}
+
+.chapter-label {
+  position: absolute;
+  right: 48px;
+  bottom: 48px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: var(--gold);
+  opacity: 0;
+  text-transform: uppercase;
+}
+
+/* ── Subtitle content overlay (Chapter 02) ── */
+.reveal-content-overlay {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 800px;
+  text-align: center;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0;
+  will-change: opacity, transform, filter;
+}
+
+.reveal-paragraph {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(18px, 2.5vw, 28px);
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--text-light);
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+}
+
+/* ════════════════════════════════
+   SECTION 3: ABOUT
+════════════════════════════════ */
+.about-section {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 100vh;
+  background: var(--dark);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.about-bg-image {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.about-bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  filter: blur(0px);
+  opacity: 0.25;
+}
+.about-gradient-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    var(--dark)         0%,
+    rgba(26,13,7,0.55) 30%,
+    rgba(26,13,7,0.55) 70%,
+    var(--dark)        100%
+  );
+}
+
+.about-content-wrap {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 120px 60px;
+}
+
+/* ── Label column ── */
+.about-label-col {
+  flex: 0 0 220px;
+  display: flex;
+  align-items: flex-start;
+  padding-top: 6px;
+}
+.about-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  opacity: 0;
+  transform: translateX(-20px);
+}
+.label-dot {
+  color: var(--gold);
+  font-size: 14px;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+.label-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--gold);
+  line-height: 1.8;
+}
+
+/* ── Text column ── */
+.about-text-col {
+  flex: 1;
+}
+
+.about-paragraph {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(16px, 2.2vw, 24px);
+  font-weight: 300;
+  line-height: 1.7;
+  color: var(--text-light);
+  opacity: 0;
+}
+
+.highlight-brand {
+  font-weight: 500;
+  color: var(--gold);
+  font-style: italic;
+}
+
+.about-para-fade {
+  color: var(--text-muted);
+  opacity: 0;
+  filter: blur(4px);
+  display: inline;
+  transition: opacity 0.8s, filter 0.8s;
+}
+.about-para-fade.revealed {
+  opacity: 1;
+  filter: blur(0);
+}
+
+/* ════════════════════════════════
+   REVEAL CLIP (Octagon → Full)
+   We clip-path animate the reveal section
+════════════════════════════════ */
+.reveal-clip-wrap {
+  clip-path: polygon(
+    18% 0%, 82% 0%, 100% 15%,
+    100% 85%, 82% 100%, 18% 100%,
+    0% 85%, 0% 15%
+  );
+}
+
+/* ════════════════════════════════
+   UTILITIES
+════════════════════════════════ */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0);
+  white-space: nowrap; border: 0;
+}

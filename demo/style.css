@@ -3,7 +3,7 @@
 body {
     font-family: 'Montserrat', sans-serif;
     color: #fff;
-    overflow: hidden;
+    overflow-x: hidden;
     background: #111;
 }
 
@@ -205,4 +205,54 @@ body {
 
 .desc-text {
     transform: translateY(120%);
+}
+
+/* ==========================================================================
+   Scroll Reveal Animation Styles
+   ========================================================================== */
+.animation-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden; /* prevents horizontal scrolling during zoom */
+}
+
+.section-2-reveal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    pointer-events: none; /* Let clicks pass through initially */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.reveal-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0px;  /* Starts at 0, or we can set it via GSAP */
+    height: 0px; 
+    clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+    overflow: hidden;
+}
+
+.reveal-image {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+}
+
+.section-2-content {
+    height: 100vh;
+    background: #000; /* Dark background to follow the image reveal */
+    padding-top: 5rem;
 }

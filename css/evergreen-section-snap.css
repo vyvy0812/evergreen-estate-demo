@@ -1,0 +1,22 @@
+/**
+ * Section snap — [data-scroll-snap-section]
+ * Hành vi slide full viewport (octagon_keep_indicator.html).
+ */
+
+[data-scroll-snap-section] {
+	min-height: 100dvh;
+}
+
+[data-scroll-snap-section] .evergreen-snap-content,
+[data-scroll-snap-section] > .brxe-container,
+[data-scroll-snap-section] > .brxe-block {
+	transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+		transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-scroll-snap-section].is-snap-active .evergreen-snap-content,
+[data-scroll-snap-section].is-snap-active > .brxe-container:first-child,
+[data-scroll-snap-section].is-snap-active > .brxe-block:first-child {
+	opacity: 1;
+	transform: scale(1);
+}
