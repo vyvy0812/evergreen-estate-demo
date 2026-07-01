@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snap Scrolling Demo — Evergreen Estate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Inter:wght@300;400;500;600&family=Great+Vibes&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --gold: #d4af37;
+            --gold-dim: rgba(212,175,55,0.3);
+            --gold-glow: rgba(212,175,55,0.08);
+        }
+
+        html, body {
+            width: 100%; height: 100%;
+            overflow: hidden; /* 🔒 toàn trang bị lock */
+            background: #080808;
+            font-family: 'Inter', sans-serif;
+            color: #fff;
+        }
+
+        /* =====================================================
+           SNAP CONTAINER — đây là "trang" thật sự
+           ===================================================== */
+        .snap-container {
+            width: 100%;
+            height: 100vh;
+
+            overflow-y: scroll;          /* ← container này scroll */
+            scroll-snap-type: y mandatory; /* ← BẬT snap theo chiều Y, bắt buộc */
+
+            /* Ẩn scrollbar nhưng vẫn scroll được */
+            scrollbar-width: none;
+        }
+        .snap-container::-webkit-scrollbar { display: none; }
+
+        /* =====================================================
+           MỖI SLIDE = 1 snap point
+           ===================================================== */
+        .slide {
+            width: 100%;
+            height: 100vh;              /* mỗi slide đúng 100vh */
+            scroll-snap-align: start;   /* ← snap vào đầu mỗi slide */
+            scroll-snap-stop: always;   /* ← không nhảy qua slide */
+
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* =====================================================
+           SLIDE 1 — Hero
+           ===================================================== */
+        .slide-1 {
+            background: radial-gradient(ellipse at 30% 50%, #1a1200 0%, #080808 60%);
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .slide-1::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(212,175,55,0.06) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(212,175,55,0.04) 0%, transparent 50%);
+        }
+
+        /* Octagon frame */
+        .octa-frame {
+            position: absolute;
+            inset: 40px;
+            opacity: 0.15;
+        }
+        .octa-frame svg { width: 100%; height: 100%; }
+
+        .hero-content { position: relative; z-index: 2; }
+        .hero-eyebrow {
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            letter-spacing: 6px;
+            color: var(--gold);
+            opacity: 0.7;
+            margin-bottom: 24px;
+        }
+        .hero-title {
+            font-family: 'Great Vibes', cursive;
+            font-size: clamp(56px, 8vw, 100px);
+            color: var(--gold);
+            line-height: 1.1;
+            margin-bottom: 20px;
+            text-shadow: 0 0 60px rgba(212,175,55,0.3);
+        }
+        .hero-sub {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(12px, 1.5vw, 16px);
+            letter-spacing: 4px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 50px;
+        }
+        .scroll-hint {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255,255,255,0.3);
+            font-size: 11px;
+            letter-spacing: 2px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+        .scroll-hint-arrow {
+            width: 1px;
+            height: 40px;
+            background: linear-gradient(to bottom, transparent, var(--gold));
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(8px); }
+        }
+
+        /* =====================================================
+           SLIDE 2 — Nội dung dài (có nested scroll)
+           ===================================================== */
+        .slide-2 {
+            background: linear-gradient(135deg, #0a0a14 0%, #080808 100%);
+        }
+        .slide-header {
+            flex-shrink: 0;
+            padding: 36px 60px 20px;
+            border-bottom: 1px solid var(--gold-dim);
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+        }
+        .slide-number {
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            letter-spacing: 4px;
+            color: var(--gold);
+            opacity: 0.5;
+        }
+        .slide-title {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(18px, 2.5vw, 28px);
+            letter-spacing: 2px;
+            color: var(--gold);
+        }
+
+        /* ★ NESTED SCROLL AREA ★ */
+        .slide-body {
+            flex: 1;
+            min-height: 0;           /* bắt buộc! */
+            overflow-y: auto;        /* ← CHỈ ĐÂY SCROLL */
+            padding: 40px 60px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-content: start;
+
+            /* ★ QUAN TRỌNG: ngăn scroll bubble lên snap-container
+               Khi nested div đang ở đầu/cuối, KHÔNG chuyển sang slide khác
+               mà chỉ dừng lại — người dùng phải scroll thêm lần nữa mới chuyển */
+            overscroll-behavior: contain;
+
+            scrollbar-width: thin;
+            scrollbar-color: var(--gold-dim) transparent;
+        }
+        .slide-body::-webkit-scrollbar { width: 3px; }
+        .slide-body::-webkit-scrollbar-thumb {
+            background: var(--gold-dim);
+            border-radius: 2px;
+        }
+
+        .content-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 28px;
+            transition: border-color 0.3s;
+        }
+        .content-card:hover { border-color: var(--gold-dim); }
+        .card-icon { font-size: 28px; margin-bottom: 14px; }
+        .card-title {
+            font-family: 'Cinzel', serif;
+            font-size: 13px;
+            letter-spacing: 2px;
+            color: var(--gold);
+            margin-bottom: 12px;
+        }
+        .card-text {
+            font-size: 13px;
+            line-height: 2;
+            color: rgba(255,255,255,0.5);
+        }
+        .content-card.full-width { grid-column: 1 / -1; }
+
+        .slide-footer {
+            flex-shrink: 0;
+            padding: 16px 60px;
+            border-top: 1px solid var(--gold-dim);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .footer-note {
+            font-size: 11px;
+            color: rgba(255,255,255,0.2);
+            letter-spacing: 1px;
+        }
+        .scroll-indicator {
+            font-size: 11px;
+            color: var(--gold);
+            opacity: 0.5;
+            letter-spacing: 1px;
+        }
+
+        /* =====================================================
+           SLIDE 3 — Gallery
+           ===================================================== */
+        .slide-3 {
+            background: #050505;
+        }
+        .gallery-grid {
+            flex: 1;
+            min-height: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 2px;
+        }
+        .gallery-cell {
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .gallery-cell:first-child {
+            grid-row: 1 / 3;
+        }
+        .gallery-bg {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+        .gallery-cell:hover .gallery-bg { transform: scale(1.05); }
+        .gallery-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%);
+            display: flex;
+            align-items: flex-end;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .gallery-cell:hover .gallery-overlay { opacity: 1; }
+        .gallery-label {
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: var(--gold);
+        }
+
+        /* Gradient overlays for gallery cells (no real images) */
+        .gc-1 { background: linear-gradient(135deg, #1a2a1a, #0d1a0d); }
+        .gc-2 { background: linear-gradient(135deg, #1a1a2a, #0d0d1a); }
+        .gc-3 { background: linear-gradient(135deg, #2a1a1a, #1a0d0d); }
+        .gc-4 { background: linear-gradient(135deg, #1a2a2a, #0d1a1a); }
+        .gc-5 { background: linear-gradient(135deg, #2a2a1a, #1a1a0d); }
+
+        .gallery-cell-inner {
+            width: 100%; height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            transition: transform 0.6s ease;
+        }
+        .gallery-cell:hover .gallery-cell-inner { transform: scale(1.05); }
+
+        /* =====================================================
+           SLIDE 4 — CTA / Liên hệ
+           ===================================================== */
+        .slide-4 {
+            background: radial-gradient(ellipse at 50% 50%, #1a1200 0%, #050505 70%);
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .cta-eyebrow {
+            font-size: 11px;
+            letter-spacing: 6px;
+            color: var(--gold);
+            opacity: 0.5;
+            margin-bottom: 20px;
+            font-family: 'Cinzel', serif;
+        }
+        .cta-title {
+            font-family: 'Great Vibes', cursive;
+            font-size: clamp(48px, 7vw, 86px);
+            color: #fff;
+            margin-bottom: 16px;
+        }
+        .cta-line {
+            width: 60px; height: 1px;
+            background: var(--gold);
+            margin: 0 auto 24px;
+        }
+        .cta-text {
+            font-size: 14px;
+            color: rgba(255,255,255,0.4);
+            line-height: 2;
+            max-width: 400px;
+            margin: 0 auto 40px;
+        }
+        .cta-btn {
+            display: inline-block;
+            padding: 14px 40px;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            letter-spacing: 3px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: transparent;
+        }
+        .cta-btn:hover {
+            background: var(--gold);
+            color: #000;
+        }
+
+        /* =====================================================
+           NAV — cố định bên phải
+           ===================================================== */
+        .nav-dots {
+            position: fixed;
+            right: 28px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 100;
+        }
+        .nav-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .nav-dot::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 1px solid transparent;
+            transition: border-color 0.3s;
+        }
+        .nav-dot.active {
+            background: var(--gold);
+            transform: scale(1.4);
+        }
+        .nav-dot.active::before {
+            border-color: var(--gold-dim);
+        }
+        .nav-dot:hover:not(.active) { background: rgba(255,255,255,0.5); }
+
+        /* Slide label tooltip */
+        .nav-dot .tooltip {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--gold-dim);
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            color: var(--gold);
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            font-family: 'Cinzel', serif;
+        }
+        .nav-dot:hover .tooltip { opacity: 1; }
+
+        /* =====================================================
+           PROGRESS BAR
+           ===================================================== */
+        .progress-bar {
+            position: fixed;
+            left: 0; top: 0;
+            width: 0%;
+            height: 2px;
+            background: linear-gradient(to right, transparent, var(--gold));
+            z-index: 100;
+            transition: width 0.4s ease;
+        }
+
+        /* =====================================================
+           SLIDE COUNTER
+           ===================================================== */
+        .slide-counter {
+            position: fixed;
+            left: 28px;
+            bottom: 28px;
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.2);
+            z-index: 100;
+        }
+        .slide-counter span { color: var(--gold); }
+
+        /* =====================================================
+           DEBUG LABEL — giải thích kỹ thuật
+           ===================================================== */
+        .debug-label {
+            position: fixed;
+            left: 28px; top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .debug-tag {
+            font-size: 9px;
+            letter-spacing: 1px;
+            padding: 3px 8px;
+            border-radius: 3px;
+            border: 1px solid;
+            font-family: monospace;
+        }
+        .debug-tag.lock {
+            background: rgba(220,53,69,0.1);
+            border-color: rgba(220,53,69,0.3);
+            color: #dc3545;
+        }
+        .debug-tag.snap {
+            background: rgba(212,175,55,0.08);
+            border-color: rgba(212,175,55,0.25);
+            color: var(--gold);
+        }
+        .debug-tag.scroll {
+            background: rgba(40,167,69,0.1);
+            border-color: rgba(40,167,69,0.3);
+            color: #28a745;
+        }
+
+        /* Animate on snap */
+        .slide { transition: opacity 0.1s; }
+        .slide.in-view .hero-content,
+        .slide.in-view .slide-header { animation: fadeUp 0.6s ease forwards; }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Progress bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Nav dots -->
+    <div class="nav-dots" id="navDots">
+        <div class="nav-dot active" onclick="goToSlide(0)">
+            <div class="tooltip">HERO</div>
+        </div>
+        <div class="nav-dot" onclick="goToSlide(1)">
+            <div class="tooltip">NỘI DUNG</div>
+        </div>
+        <div class="nav-dot" onclick="goToSlide(2)">
+            <div class="tooltip">GALLERY</div>
+        </div>
+        <div class="nav-dot" onclick="goToSlide(3)">
+            <div class="tooltip">LIÊN HỆ</div>
+        </div>
+    </div>
+
+    <!-- Debug labels -->
+    <div class="debug-label">
+        <div class="debug-tag lock">body: overflow hidden 🔒</div>
+        <div class="debug-tag snap">scroll-snap-type: y mandatory</div>
+        <div class="debug-tag scroll" id="debugScroll">scroll-snap-align: start</div>
+    </div>
+
+    <!-- Slide counter -->
+    <div class="slide-counter"><span id="currentSlide">01</span> / 04</div>
+
+    <!-- ============================================================
+         SNAP CONTAINER
+         Đây là element thực sự scroll, body vẫn bị lock
+         ============================================================ -->
+    <div class="snap-container" id="snapContainer">
+
+        <!-- ── SLIDE 1: Hero ── -->
+        <div class="slide slide-1" data-index="0">
+            <!-- Octagon decoration -->
+            <div class="octa-frame">
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <polygon points="20,0 80,0 100,20 100,80 80,100 20,100 0,80 0,20"
+                             fill="none" stroke="#d4af37" stroke-width="0.5"/>
+                </svg>
+            </div>
+
+            <div class="hero-content">
+                <div class="hero-eyebrow">EVERGREEN ESTATE — LẠNG SƠN</div>
+                <div class="hero-title">Sống Danh Giá</div>
+                <div class="hero-sub">Scroll để khám phá</div>
+                <div class="scroll-hint">
+                    <div class="scroll-hint-arrow"></div>
+                    SCROLL
+                </div>
+            </div>
+        </div>
+
+        <!-- ── SLIDE 2: Nội dung dài (có nested scroll) ── -->
+        <div class="slide slide-2" data-index="1">
+            <div class="slide-header">
+                <div class="slide-number">02 —</div>
+                <div class="slide-title">Bản Giao Hưởng Thiên Nhiên</div>
+            </div>
+
+            <!--
+                ★ NESTED SCROLL AREA ★
+                Phần này scroll độc lập — trang vẫn bị lock
+                CSS: overflow-y: auto + flex:1 + min-height:0
+            -->
+            <div class="slide-body">
+                <div class="content-card">
+                    <div class="card-icon">🌿</div>
+                    <div class="card-title">Thiên Nhiên Nguyên Bản</div>
+                    <div class="card-text">
+                        Evergreen Estate tọa lạc giữa vùng núi non hùng vĩ của Lạng Sơn,
+                        nơi thiên nhiên còn giữ nguyên vẻ hoang sơ và thuần khiết nhất.
+                        Mỗi sáng thức giấc là một bức tranh thủy mặc sống động.
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-icon">🏛️</div>
+                    <div class="card-title">Kiến Trúc Đẳng Cấp</div>
+                    <div class="card-text">
+                        Từng chi tiết kiến trúc được chọn lọc kỹ lưỡng, kết hợp hài hòa
+                        giữa phong cách Á Đông tinh tế và hiện đại tối giản. Không gian
+                        sống như một tác phẩm nghệ thuật hoàn chỉnh.
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-icon">♨️</div>
+                    <div class="card-title">Suối Khoáng Nóng</div>
+                    <div class="card-text">
+                        Hệ thống suối khoáng nóng tự nhiên được khai thác và đưa vào
+                        từng căn villa, mang lại trải nghiệm spa độc bản ngay tại nhà.
+                        Nhiệt độ lý tưởng quanh năm từ 38–42°C.
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-icon">🛡️</div>
+                    <div class="card-title">An Ninh Tuyệt Đối</div>
+                    <div class="card-text">
+                        Hệ thống an ninh 3 lớp với camera AI nhận diện, bảo vệ 24/7 và
+                        kiểm soát truy cập thông minh. Cộng đồng cư dân được tuyển chọn
+                        kỹ lưỡng, đảm bảo đẳng cấp và sự riêng tư tuyệt đối.
+                    </div>
+                </div>
+
+                <div class="content-card full-width">
+                    <div class="card-icon">📍</div>
+                    <div class="card-title">Vị Trí Chiến Lược</div>
+                    <div class="card-text">
+                        Chỉ 2 giờ từ Hà Nội, 15 phút từ trung tâm Lạng Sơn, ngay cạnh
+                        cửa khẩu quốc tế Hữu Nghị. Tiếp giáp đường cao tốc Bắc Giang –
+                        Lạng Sơn, kết nối thuận tiện với các trung tâm kinh tế lớn.
+                        Đây là tọa độ vàng của bất động sản nghỉ dưỡng miền núi phía Bắc.
+                        <br><br>
+                        ↓ <em style="color:var(--gold)">Scroll xuống trong ô này — trang không di chuyển!</em>
+                        <br><br>
+                        Diện tích tổng thể: 50 hecta xanh. Mật độ xây dựng chỉ 15%.
+                        85% còn lại dành cho cảnh quan, hồ nước, vườn hoa và không gian
+                        công cộng đẳng cấp. Mỗi căn villa có diện tích đất từ 500m² đến
+                        2.000m², đảm bảo khoảng riêng tư và tầm nhìn không bị che khuất.
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide-footer">
+                <div class="footer-note">↕ SCROLL NỘI DUNG TRONG Ô NÀY · TRANG VẪN BỊ LOCK</div>
+                <div class="scroll-indicator">↓ SCROLL ĐỂ CHUYỂN SLIDE</div>
+            </div>
+        </div>
+
+        <!-- ── SLIDE 3: Gallery ── -->
+        <div class="slide slide-3" data-index="2">
+            <div class="slide-header">
+                <div class="slide-number">03 —</div>
+                <div class="slide-title">Không Gian Sống</div>
+            </div>
+
+            <div class="gallery-grid">
+                <div class="gallery-cell gc-1">
+                    <div class="gallery-cell-inner">🏡</div>
+                    <div class="gallery-overlay">
+                        <div class="gallery-label">VILLA CHÍNH</div>
+                    </div>
+                </div>
+                <div class="gallery-cell gc-2">
+                    <div class="gallery-cell-inner">🌊</div>
+                    <div class="gallery-overlay">
+                        <div class="gallery-label">HỒ BƠI VÔ CỰC</div>
+                    </div>
+                </div>
+                <div class="gallery-cell gc-3">
+                    <div class="gallery-cell-inner">🌸</div>
+                    <div class="gallery-overlay">
+                        <div class="gallery-label">VƯỜN HOA</div>
+                    </div>
+                </div>
+                <div class="gallery-cell gc-4">
+                    <div class="gallery-cell-inner">🍽️</div>
+                    <div class="gallery-overlay">
+                        <div class="gallery-label">NHÀ HÀNG</div>
+                    </div>
+                </div>
+                <div class="gallery-cell gc-5">
+                    <div class="gallery-cell-inner">🧘</div>
+                    <div class="gallery-overlay">
+                        <div class="gallery-label">SPA & WELLNESS</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── SLIDE 4: CTA ── -->
+        <div class="slide slide-4" data-index="3">
+            <div style="position:relative;z-index:2;text-align:center;">
+                <div class="cta-eyebrow">BẮT ĐẦU HÀNH TRÌNH</div>
+                <div class="cta-title">Đặt Lịch Tham Quan</div>
+                <div class="cta-line"></div>
+                <div class="cta-text">
+                    Hãy để chúng tôi đưa bạn đến trải nghiệm
+                    đẳng cấp sống thật sự tại Evergreen Estate,
+                    Lạng Sơn — Việt Nam.
+                </div>
+                <button class="cta-btn">LIÊN HỆ NGAY</button>
+            </div>
+        </div>
+
+    </div><!-- end .snap-container -->
+
+    <script>
+        const container  = document.getElementById('snapContainer');
+        const dots       = document.querySelectorAll('.nav-dot');
+        const counter    = document.getElementById('currentSlide');
+        const progressBar = document.getElementById('progressBar');
+        const debugScroll = document.getElementById('debugScroll');
+        const slides     = document.querySelectorAll('.slide');
+        const slideLabels = ['01', '02', '03', '04'];
+
+        let currentIndex = 0;
+
+        // ── Điều hướng bằng dot ──
+        function goToSlide(index) {
+            container.scrollTo({
+                top: index * window.innerHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        // ── Theo dõi slide đang hiển thị ──
+        function updateUI(index) {
+            if (index === currentIndex) return;
+            currentIndex = index;
+
+            // Dots
+            dots.forEach((d, i) => d.classList.toggle('active', i === index));
+
+            // Counter
+            counter.textContent = slideLabels[index];
+
+            // Progress bar
+            const pct = (index / (slides.length - 1)) * 100;
+            progressBar.style.width = pct + '%';
+
+            // Debug label
+            const labels = [
+                'scroll-snap-align: start — HERO',
+                'scroll-snap-align: start — NỘI DUNG',
+                'scroll-snap-align: start — GALLERY',
+                'scroll-snap-align: start — CTA'
+            ];
+            debugScroll.textContent = labels[index];
+        }
+
+        // ── IntersectionObserver — detect slide đang visible ──
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+                    const index = parseInt(entry.target.dataset.index);
+                    updateUI(index);
+                }
+            });
+        }, {
+            root: container,
+            threshold: 0.5
+        });
+
+        slides.forEach(slide => observer.observe(slide));
+
+        // ── Keyboard navigation ──
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+                e.preventDefault();
+                goToSlide(Math.min(currentIndex + 1, slides.length - 1));
+            }
+            if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+                e.preventDefault();
+                goToSlide(Math.max(currentIndex - 1, 0));
+            }
+        });
+    </script>
+</body>
+</html>
